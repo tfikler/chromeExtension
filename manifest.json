@@ -1,22 +1,21 @@
 {
   "manifest_version": 3,
-  "name": "Context Menu Extension",
+  "name": "Idea to Reality Extension",
   "version": "1.0",
-  "permissions": ["contextMenus"],
+  "permissions": ["contextMenus", "activeTab", "scripting"],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "extension.js"
   },
   "action": {
-    "default_popup": "popup.html",
     "default_icon": {
-      "16": "images/icon16.png",
-      "48": "images/icon48.png",
-      "128": "images/icon128.png"
+      "16": "ggg.png",
+      "48": "ggg.png",
+      "128": "ggg.png"
     }
   },
   "icons": {
-    "16": "images/icon16.png",
-    "48": "images/icon48.png",
-    "128": "images/icon128.png"
+    "16": "ggg.png",
+    "48": "ggg.png",
+    "128": "ggg.png"
   }
 }
