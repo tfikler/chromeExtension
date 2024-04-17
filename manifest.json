@@ -6,6 +6,12 @@
   "background": {
     "service_worker": "extension.js"
   },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["extension.js"]
+    }
+  ],
   "action": {
     "default_icon": {
       "16": "ggg.png",
