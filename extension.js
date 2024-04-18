@@ -39,7 +39,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 chrome.runtime.onInstalled.addListener(() => {
     chrome.contextMenus.create({
         id: "addCommentsToCode",
-        title: "Add Comments",
+        title: "add comments to code",
         contexts: ["selection"]
     });
 });
@@ -48,7 +48,25 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     if (info.menuItemId === "addCommentsToCode") {
         chrome.scripting.executeScript({
             target: { tabId: tab.id },
-            function: addCommentstoText,
+            function: addCommentsToCode,
+            args: [info.selectionText]
+        });
+    }
+});
+
+chrome.runtime.onInstalled.addListener(() => {
+    chrome.contextMenus.create({
+        id: "summarizeToASingleParagraph",
+        title: "Summarize to a single paragraph",
+        contexts: ["selection"]
+    });
+});
+
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+    if (info.menuItemId === "summarizeToASingleParagraph") {
+        chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            function: summarizeToASingleParagraph,
             args: [info.selectionText]
         });
     }
@@ -98,8 +116,8 @@ async function improveSelectedTextCreative(selectedText) {
     await replaceText(selectedText, response);
 }
 
-async function addCommentstoText(selectedText) {
-    const systemContent = 'You are an english teacher and should provide a comment to add to the selected code. - response only with the improved text';
+async function addCommentsToCode(selectedText) {
+    const systemContent = 'You should provide a comment to add to the selected code. - response only with the comment';
     const conversationItem = [
         {
             role: 'system',
@@ -110,7 +128,7 @@ async function addCommentstoText(selectedText) {
             content: selectedText
         }
     ];
-    const response = await queryOpenAI(conversationItem, 0.2);  //can adjust the temperature if needed
+    const response = await queryOpenAI(conversationItem, 0.2);
     const commentToAdd = response;
     //comment in the specified format
     const comment = `\n// comments: '${commentToAdd}'`;
@@ -118,6 +136,25 @@ async function addCommentstoText(selectedText) {
     const newText = `${selectedText}${comment}`;
     await replaceText(selectedText, newText);
 }
+
+async function summarizeToASingleParagraph(selectedText) {
+    const systemContent = 'You are an english teacher and should summarize the following english to a ONE paragraph - response only with the summarized paragraph.';
+    const conversationItem = [
+        {
+            role: 'system',
+            content: systemContent
+        },
+        {
+            role: 'user',
+            content: selectedText
+        }
+    ];
+    const response = await queryOpenAI(conversationItem, 0.2);
+    console.log(response);
+    await openIframeWithContent();
+    await replaceText('this is a popup' , response)
+}
+
 
 // -------------------THIS IS HOW TO REPLACE TEXT-------------------
 async function replaceText(originalText, improvedText) {
