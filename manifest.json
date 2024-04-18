@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Idea to Reality Extension",
   "version": "1.0",
-  "permissions": ["contextMenus", "activeTab", "scripting"],
+  "permissions": ["contextMenus", "activeTab", "scripting", "tabs"],
   "background": {
     "service_worker": "extension.js"
   },
@@ -10,6 +10,12 @@
     {
       "matches": ["<all_urls>"],
       "js": ["extension.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["ggg.png", "popup.html"],
+      "matches": ["<all_urls>"]
     }
   ],
   "action": {
