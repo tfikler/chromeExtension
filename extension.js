@@ -151,9 +151,9 @@ async function summarizeToASingleParagraph(selectedText) {
     ];
     const response = await queryOpenAI(conversationItem, 0.2);
     console.log(response);
-    await openIframeWithContent();
-    await replaceText('this is a popup' , response)
+    await replaceTextPOP(response);
 }
+
 
 
 // -------------------THIS IS HOW TO REPLACE TEXT-------------------
@@ -162,6 +162,60 @@ async function replaceText(originalText, improvedText) {
     console.log('improvedText: ', improvedText);
     document.body.innerHTML = document.body.innerHTML.replace(originalText, improvedText);
 }
+
+async function replaceTextPOP(improvedText) {
+    let modal = document.getElementById('improvementModal');
+    if (!modal) {
+        // Create modal container
+        modal = document.createElement('div');
+        modal.id = 'improvementModal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40%;
+            max-width: 600px;
+            height: auto;
+            max-height: 80%;
+            z-index: 10000;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: stretch;
+        `;
+        // Create modal content container
+        let modalContent = document.createElement('div');
+        modalContent.id = 'improvementModalContent';
+        modalContent.textContent = improvedText;
+        
+        // Create close button for modal
+        let closeButton = document.createElement('button');
+        closeButton.textContent = 'Close';
+        closeButton.onclick = function() {
+            modal.style.display = 'none';
+        };
+        
+        modal.appendChild(modalContent);
+        modal.appendChild(closeButton);
+        
+        document.body.appendChild(modal);
+    } else {
+        // If modal already exists, just update the content and make sure it's visible
+        let modalContent = document.getElementById('improvementModalContent');
+        modalContent.textContent = improvedText;
+        modal.style.display = 'block';
+    }
+}
+
+
+
 // -------------------THIS THE END OF HOW TO REPLACE TEXT-------------------
 
 // -------------------THIS IS HOW TO QUERY OPENAI-------------------
@@ -198,6 +252,7 @@ async function queryOpenAI(conversationItem, temp) {
 
 async function openIframeWithContent() {
     const iframe = document.createElement('iframe');
+    iframe.id = 'improvementIframe'
     iframe.src = chrome.runtime.getURL('popup.html');
     iframe.style.cssText = 'position:fixed;top:0;left:0;display:block;width:20%;height:20%;z-index:9999;';
     document.body.appendChild(iframe);

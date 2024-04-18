@@ -14,7 +14,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["ggg.png", "popup.html"],
+      "resources": ["ggg.png", "popup.html", "iframe-script.js"],
       "matches": ["<all_urls>"]
     }
   ],
@@ -29,5 +29,8 @@
     "16": "ggg.png",
     "48": "ggg.png",
     "128": "ggg.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
   }
 }
