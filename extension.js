@@ -36,6 +36,25 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     }
 });
 
+chrome.runtime.onInstalled.addListener(() => {
+    chrome.contextMenus.create({
+        id: "addCommentsToCode",
+        title: "Add Comments",
+        contexts: ["selection"]
+    });
+});
+
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+    if (info.menuItemId === "addCommentsToCode") {
+        chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            function: addCommentstoText,
+            args: [info.selectionText]
+        });
+    }
+});
+
+
 /**
  * TODO:
  *  1. Create a new item in the context menu called "Add comments to the code" - which should add comments to selected code.
@@ -77,6 +96,27 @@ async function improveSelectedTextCreative(selectedText) {
     ];
     const response = await queryOpenAI(conversationItem, 1.2);
     await replaceText(selectedText, response);
+}
+
+async function addCommentstoText(selectedText) {
+    const systemContent = 'You are an english teacher and should provide a comment to add to the selected code. - response only with the improved text';
+    const conversationItem = [
+        {
+            role: 'system',
+            content: systemContent
+        },
+        {
+            role: 'user',
+            content: selectedText
+        }
+    ];
+    const response = await queryOpenAI(conversationItem, 0.2);  //can adjust the temperature if needed
+    const commentToAdd = response;
+    //comment in the specified format
+    const comment = `\n// comments: '${commentToAdd}'`;
+    // Append the comment to the selected text
+    const newText = `${selectedText}${comment}`;
+    await replaceText(selectedText, newText);
 }
 
 // -------------------THIS IS HOW TO REPLACE TEXT-------------------
