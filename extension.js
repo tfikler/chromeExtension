@@ -180,7 +180,7 @@ async function AIQuiz(selectedText) {
         },
         {
             role: 'user',
-            content:`based on this text generate me 10 multiple choice questions with 4 possible answers where 1 answer is actually right(randomly placing the correct answer withing the 4 options) and mark it so we know which one it is - respond with the questions only ${selectedText}`
+            content:`based on this text generate me 10 multiple choice questions with 4 possible answers where 1 answer is actually right(randomly placing the correct answer withing the 4 options) and mark it so we know which one it is - respond with the questions only: ${selectedText} , give me this is a json format.`
         }
     ]; // create a conversationItem (MUST BE IN THAT FORMAT)
     const response = await queryOpenAI(conversationItem, 0.7); // We must call the chatGPT query function with await since it is an async (it takes time for the response to come back) function.
