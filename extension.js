@@ -244,6 +244,7 @@ async function displayQuiz1(quizContent) {
         questionElement.textContent = question.question;
         questionElement.style.fontSize = '20px';
         questionElement.style.marginBottom = '20px';
+        questionElement.style.padding = 'inherit';
         modalContent.appendChild(questionElement);
 
         // Create and display answer buttons
@@ -263,15 +264,30 @@ async function displayQuiz1(quizContent) {
             answerElement.onclick = () => {
                 if (answer === question.correct_answer) {
                     answerElement.style.backgroundColor = 'lightgreen';
-                    alert('Correct Answer!');
+                    displayResult('Correct Answer!', true);
                 } else {
                     answerElement.style.backgroundColor = 'salmon';
-                    alert('Wrong Answer!');
+                    displayResult('Wrong Answer!', false);
                 }
             };
             modalContent.appendChild(answerElement);
         });
     }
+
+    function displayResult(message, isCorrect) {
+        let resultElement = document.getElementById('result');
+        if (!resultElement) {
+            const newResultElement = document.createElement('div');
+            newResultElement.id = 'result';
+            newResultElement.style.fontSize = '18px';
+            newResultElement.style.marginTop = '20px';
+            modalContent.appendChild(newResultElement);
+        }
+        resultElement = document.getElementById('result');
+        resultElement.textContent = message;
+        resultElement.style.color = isCorrect ? 'green' : 'red';
+    }
+
 
     // Loop through each question and display it
     for (let i = 0; i < quizContent.questions.length; i++) {
