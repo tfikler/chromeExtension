@@ -257,7 +257,7 @@ async function displayQuiz1(quizContent) {
             modalContent.appendChild(resultElement);
         }
     }
-
+    modalContent.style.display = 'block !important';
     for (let i = 0; i < quizContent.questions.length; i++) {
         console.log('Displaying question:', quizContent.questions[i].question);
         await new Promise(resolve => setTimeout(resolve, 2000)); // 500 ms delay
