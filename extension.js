@@ -212,19 +212,8 @@ async function displayQuiz1(quizContent) {
         modalContent.style.display = 'none';
     }
     exitButton.id = 'exitButton';
-    exitButton.textContent = 'Exit';
-    exitButton.style.position = 'absolute';
-    exitButton.style.top = '10px';
-    exitButton.style.right = '10px';
-    exitButton.style.padding = '5px 10px';
-    exitButton.style.fontSize = '16px';
-    exitButton.style.border = 'none';
-    exitButton.style.backgroundColor = '#ff6347';
-    exitButton.style.color = 'white';
-    exitButton.style.cursor = 'pointer';
-    exitButton.style.borderRadius = '5px';
+    exitButton.style.cssText = 'position: absolute; top: 10px; right: 10px; padding: 5px 10px; font-size: 16px; border: none; background-color: #ff6347; color: white; cursor: pointer; border-radius: 5px;';
 
-    // Add hover effect for the exit button
     exitButton.onmouseover = function() {
         exitButton.style.backgroundColor = '#e53e3e';
     };
@@ -232,88 +221,55 @@ async function displayQuiz1(quizContent) {
         exitButton.style.backgroundColor = '#ff6347';
     };
 
-
-    // Function to display each question
     async function displayQuestion(question) {
-        // Clear previous content
         modalContent.innerHTML = '';
         modalContent.appendChild(exitButton)
 
-        // Create and display the question
         let questionElement = document.createElement('div');
         questionElement.textContent = question.question;
-        questionElement.style.fontSize = '20px';
-        questionElement.style.marginBottom = '20px';
-        questionElement.style.padding = 'inherit';
+        questionElement.style.cssText = 'font-size: 20px; margin-bottom: 20px; padding: inherit;';
         modalContent.appendChild(questionElement);
 
-        // Create and display answer buttons
         question.answers.forEach((answer) => {
             let answerElement = document.createElement('button');
             answerElement.textContent = answer;
-            answerElement.style.display = 'block';
-            answerElement.style.width = '100%';
-            answerElement.style.padding = '10px';
-            answerElement.style.marginTop = '10px';
-            answerElement.style.fontSize = '16px';
-            answerElement.style.border = '1px solid #ccc';
-            answerElement.style.backgroundColor = '#f4f4f4';
-            answerElement.style.cursor = 'pointer';
-            answerElement.style.transition = 'background-color 0.3s';
-
-            answerElement.onclick = () => {
-                if (answer === question.correct_answer) {
-                    answerElement.style.backgroundColor = 'lightgreen';
-                    displayResult('Correct Answer!', true);
-                } else {
-                    answerElement.style.backgroundColor = 'salmon';
-                    displayResult('Wrong Answer!', false);
-                }
+            answerElement.style.cssText = 'display: block; width: 100%; padding: 10px; margin-top: 10px; font-size: 16px; border: 1px solid #ccc; background-color: #f4f4f4; cursor: pointer; transition: background-color 0.3s;';
+            answerElement.onclick = async () => {
+                const isCorrect = answer === question.correct_answer;
+                answerElement.style.backgroundColor = isCorrect ? 'lightgreen' : 'salmon';
+                displayResult(isCorrect ? 'Correct Answer!' : 'Wrong Answer!', isCorrect);
+                answerElement.removeEventListener('click', this);
             };
             modalContent.appendChild(answerElement);
         });
     }
 
     function displayResult(message, isCorrect) {
-        let resultElement = document.getElementById('result');
-        if (!resultElement) {
-            const newResultElement = document.createElement('div');
-            newResultElement.id = 'result';
-            newResultElement.style.fontSize = '18px';
-            newResultElement.style.marginTop = '20px';
-            modalContent.appendChild(newResultElement);
-        }
-        resultElement = document.getElementById('result');
+        let resultElement = document.getElementById('result') || document.createElement('div');
+        resultElement.id = 'result';
         resultElement.textContent = message;
-        resultElement.style.color = isCorrect ? 'green' : 'red';
+        resultElement.style.cssText = `font-size: 18px; margin-top: 20px; color: ${isCorrect ? 'green' : 'red'};`;
+        if (!document.getElementById('result')) {
+            modalContent.appendChild(resultElement);
+        }
     }
 
-
-    // Loop through each question and display it
     for (let i = 0; i < quizContent.questions.length; i++) {
-        console.log('Displaying question:', quizContent.questions[i]);
+        console.log('Displaying question:', quizContent.questions[i].question);
+        await new Promise(resolve => setTimeout(resolve, 2000)); // 500 ms delay
         await displayQuestion(quizContent.questions[i]);
 
-        // Wait for user to select an answer before proceeding
-        await new Promise((resolve) => {
-            const buttons = modalContent.getElementsByTagName('button');
-            Array.from(buttons).forEach(button => {
-                button.addEventListener('click', resolve, { once: true });
-                if (button.id === 'exitButton') {
-                    button.addEventListener('click', () => {
-                        resolve();
-                        modalContent.style.display = 'none';
-                    });
-                }
-            });
+        await new Promise(resolve => {
+            const buttons = modalContent.querySelectorAll('button:not(#exitButton)');
+            buttons.forEach(button => button.addEventListener('click', resolve, { once: true }));
         });
     }
 
-    // Display completion message after all questions have been answered
     modalContent.innerHTML = '<div>All questions completed!</div>';
     modalContent.appendChild(exitButton);
     modalContent.style.textAlign = 'center';
 }
+
 
 async function displayLoading() {
     let modal = document.getElementById('loadingModal');
@@ -454,14 +410,14 @@ async function displayQuiz(quizContent) {
         // modalContent.id = 'quizModalContent';
         // modalContent.innerHTML = quizContent; // Assuming quizContent is HTML formatted
         
-        let closeButton = document.createElement('button');
-        closeButton.textContent = 'Close';
-        closeButton.onclick = function() {
-            modal.style.display = 'none';
-        };
+        // let closeButton = document.createElement('button');
+        // closeButton.textContent = 'Close';
+        // closeButton.onclick = function() {
+        //     modal.style.display = 'none';
+        // };
         
         // modal.appendChild(modalContent);
-        modal.appendChild(closeButton);
+        // modal.appendChild(closeButton);
         
         document.body.appendChild(modal);
     } else {
