@@ -166,8 +166,7 @@ async function summarizeToASingleParagraph(selectedText) {
             content: selectedText
         }
     ];
-    const response = await queryOpenAI(conversationItem, 0.2);
-    console.log(response);
+    const response = await queryOpenAIWithLoading(conversationItem, 0.2)
     await replaceTextPOP(response);
 }
 
@@ -183,8 +182,57 @@ async function AIQuiz(selectedText) {
             content:`based on this text generate me 10 multiple choice questions with 4 possible answers where 1 answer is actually right(randomly placing the correct answer withing the 4 options) and mark it so we know which one it is - respond with the questions only: ${selectedText} , give me this is a json format.`
         }
     ]; // create a conversationItem (MUST BE IN THAT FORMAT)
-    const response = await queryOpenAI(conversationItem, 0.7); // We must call the chatGPT query function with await since it is an async (it takes time for the response to come back) function.
+    const response = await queryOpenAIWithLoading(conversationItem, 0.7);
     await displayQuiz(response);
+}
+
+async function displayLoading() {
+    let modal = document.getElementById('loadingModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'loadingModal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40%;
+            max-width: 600px;
+            height: auto;
+            max-height: 80%;
+            z-index: 10000;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: stretch;
+        `;
+        let modalContent = document.createElement('div');
+        modalContent.textContent = 'Loading...';
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+    } else {
+        modal.style.display = 'block';
+    }
+}
+
+async function queryOpenAIWithLoading(conversationItem, temp) {
+    await displayLoading();
+    const response = await queryOpenAI(conversationItem, temp);
+    await hideLoading();
+    return response;
+}
+
+async function hideLoading() {
+    let modal = document.getElementById('loadingModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
 }
 
 
