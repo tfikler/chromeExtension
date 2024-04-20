@@ -206,6 +206,31 @@ async function AIQuiz(selectedText) {
 
 async function displayQuiz1(quizContent) {
     const modalContent = document.getElementById('quizModal');
+    const exitButton = document.createElement('button');
+    exitButton.textContent = 'Exit';
+    exitButton.onclick = function() {
+        modalContent.style.display = 'none';
+    }
+    exitButton.textContent = 'Exit';
+    exitButton.style.position = 'absolute';
+    exitButton.style.top = '10px';
+    exitButton.style.right = '10px';
+    exitButton.style.padding = '5px 10px';
+    exitButton.style.fontSize = '16px';
+    exitButton.style.border = 'none';
+    exitButton.style.backgroundColor = '#ff6347';
+    exitButton.style.color = 'white';
+    exitButton.style.cursor = 'pointer';
+    exitButton.style.borderRadius = '5px';
+
+    // Add hover effect for the exit button
+    exitButton.onmouseover = function() {
+        exitButton.style.backgroundColor = '#e53e3e';
+    };
+    exitButton.onmouseout = function() {
+        exitButton.style.backgroundColor = '#ff6347';
+    };
+
 
     // Function to display each question
     async function displayQuestion(question) {
@@ -221,16 +246,14 @@ async function displayQuiz1(quizContent) {
         question.answers.forEach((answer, index) => {
             let answerElement = document.createElement('button');
             answerElement.textContent = answer;
-            answerElement.onclick = () => {
+            answerElement.onclick = () => setTimeout(() => {
                 // Mark buttons based on correctness
                 if (answer === question.correct_answer) {
                     answerElement.style.backgroundColor = 'green';
-                    alert('Correct Answer!');
                 } else {
                     answerElement.style.backgroundColor = 'red';
-                    alert('Wrong Answer!');
                 }
-            };
+            }, 2500);
             modalContent.appendChild(answerElement);
         });
     }
@@ -251,6 +274,7 @@ async function displayQuiz1(quizContent) {
 
     // Display completion message after all questions have been answered
     modalContent.innerHTML = '<div>All questions completed!</div>';
+    modalContent.appendChild(exitButton);
 }
 
 async function displayLoading() {
@@ -403,8 +427,6 @@ async function displayQuiz(quizContent) {
         
         document.body.appendChild(modal);
     } else {
-        let modalContent = document.getElementById('quizModalContent');
-        modalContent.innerHTML = quizContent; // Assuming quizContent is HTML formatted
         modal.style.display = 'block';
     }
 }
