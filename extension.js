@@ -205,31 +205,52 @@ async function AIQuiz(selectedText) {
 }
 
 async function displayQuiz1(quizContent) {
-    async function displayQuestion(question, answers) {
-        let modalContent = document.getElementById('quizModal');
+    const modalContent = document.getElementById('quizModal');
+
+    // Function to display each question
+    async function displayQuestion(question) {
+        // Clear previous content
+        modalContent.innerHTML = '';
+
+        // Create and display the question
         let questionElement = document.createElement('div');
         questionElement.textContent = question.question;
-        console.log('questionElement: ', questionElement);
         modalContent.appendChild(questionElement);
-        for (let i = 0; i < question.answers.length; i++) {
-            let answerElement = document.createElement(`answer${i}`);
-            console.log('question.answers[i]: ', question.answers[i]);
-            answerElement.textContent = question.answers[i];
+
+        // Create and display answer buttons
+        question.answers.forEach((answer, index) => {
+            let answerElement = document.createElement('button');
+            answerElement.textContent = answer;
+            answerElement.onclick = () => {
+                // Mark buttons based on correctness
+                if (answer === question.correct_answer) {
+                    answerElement.style.backgroundColor = 'green';
+                    alert('Correct Answer!');
+                } else {
+                    answerElement.style.backgroundColor = 'red';
+                    alert('Wrong Answer!');
+                }
+            };
             modalContent.appendChild(answerElement);
-        }
-    }
-    async function checkIfCorrectAnswer() {
-        let modalContent = document.getElementById('quizModalContent');
-        let correctAnswerElement = document.createElement('div');
-        correctAnswerElement.textContent = 'Correct Answer!';
-        modalContent.appendChild(correctAnswerElement);
-    }
-    for (let i = 0; i < quizContent.questions.length; i++) {
-        console.log('displaying question: ', quizContent.questions[i], quizContent.questions[i].correct_answer);
-        await displayQuestion(quizContent.questions[i], quizContent.questions[i].correct_answer);
-        await checkIfCorrectAnswer();
+        });
     }
 
+    // Loop through each question and display it
+    for (let i = 0; i < quizContent.questions.length; i++) {
+        console.log('Displaying question:', quizContent.questions[i]);
+        await displayQuestion(quizContent.questions[i]);
+
+        // Wait for user to select an answer before proceeding
+        await new Promise((resolve) => {
+            const buttons = modalContent.getElementsByTagName('button');
+            Array.from(buttons).forEach(button => {
+                button.addEventListener('click', resolve, { once: true });
+            });
+        });
+    }
+
+    // Display completion message after all questions have been answered
+    modalContent.innerHTML = '<div>All questions completed!</div>';
 }
 
 async function displayLoading() {
