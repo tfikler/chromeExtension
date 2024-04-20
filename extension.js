@@ -211,6 +211,7 @@ async function displayQuiz1(quizContent) {
     exitButton.onclick = function() {
         modalContent.style.display = 'none';
     }
+    exitButton.id = 'exitButton';
     exitButton.textContent = 'Exit';
     exitButton.style.position = 'absolute';
     exitButton.style.top = '10px';
@@ -236,6 +237,7 @@ async function displayQuiz1(quizContent) {
     async function displayQuestion(question) {
         // Clear previous content
         modalContent.innerHTML = '';
+        modalContent.appendChild(exitButton)
 
         // Create and display the question
         let questionElement = document.createElement('div');
@@ -268,6 +270,12 @@ async function displayQuiz1(quizContent) {
             const buttons = modalContent.getElementsByTagName('button');
             Array.from(buttons).forEach(button => {
                 button.addEventListener('click', resolve, { once: true });
+                if (button.id === 'exitButton') {
+                    button.addEventListener('click', () => {
+                        resolve();
+                        modalContent.style.display = 'none';
+                    });
+                }
             });
         });
     }
