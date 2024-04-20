@@ -242,20 +242,33 @@ async function displayQuiz1(quizContent) {
         // Create and display the question
         let questionElement = document.createElement('div');
         questionElement.textContent = question.question;
+        questionElement.style.fontSize = '20px';
+        questionElement.style.marginBottom = '20px';
         modalContent.appendChild(questionElement);
 
         // Create and display answer buttons
-        question.answers.forEach((answer, index) => {
+        question.answers.forEach((answer) => {
             let answerElement = document.createElement('button');
             answerElement.textContent = answer;
-            answerElement.onclick = () => setTimeout(() => {
-                // Mark buttons based on correctness
+            answerElement.style.display = 'block';
+            answerElement.style.width = '100%';
+            answerElement.style.padding = '10px';
+            answerElement.style.marginTop = '10px';
+            answerElement.style.fontSize = '16px';
+            answerElement.style.border = '1px solid #ccc';
+            answerElement.style.backgroundColor = '#f4f4f4';
+            answerElement.style.cursor = 'pointer';
+            answerElement.style.transition = 'background-color 0.3s';
+
+            answerElement.onclick = () => {
                 if (answer === question.correct_answer) {
-                    answerElement.style.backgroundColor = 'green';
+                    answerElement.style.backgroundColor = 'lightgreen';
+                    alert('Correct Answer!');
                 } else {
-                    answerElement.style.backgroundColor = 'red';
+                    answerElement.style.backgroundColor = 'salmon';
+                    alert('Wrong Answer!');
                 }
-            }, 2500);
+            };
             modalContent.appendChild(answerElement);
         });
     }
@@ -283,6 +296,7 @@ async function displayQuiz1(quizContent) {
     // Display completion message after all questions have been answered
     modalContent.innerHTML = '<div>All questions completed!</div>';
     modalContent.appendChild(exitButton);
+    modalContent.style.textAlign = 'center';
 }
 
 async function displayLoading() {
