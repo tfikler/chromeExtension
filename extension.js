@@ -220,6 +220,7 @@ async function displayQuiz1(quizContent) {
     exitButton.onmouseout = function() {
         exitButton.style.backgroundColor = '#ff6347';
     };
+    let correctAnswers = 0;
 
     async function displayQuestion(question) {
         modalContent.innerHTML = '';
@@ -236,6 +237,9 @@ async function displayQuiz1(quizContent) {
             answerElement.style.cssText = 'display: block; width: 100%; padding: 10px; margin-top: 10px; font-size: 16px; border: 1px solid #ccc; background-color: #f4f4f4; cursor: pointer; transition: background-color 0.3s;';
             answerElement.onclick = async () => {
                 const isCorrect = answer === question.correct_answer;
+                if (isCorrect) {
+                    correctAnswers++;
+                }
                 answerElement.style.backgroundColor = isCorrect ? 'lightgreen' : 'salmon';
                 displayResult(isCorrect ? 'Correct Answer!' : 'Wrong Answer!', isCorrect);
                 answerElement.removeEventListener('click', this);
@@ -248,7 +252,7 @@ async function displayQuiz1(quizContent) {
         let resultElement = document.getElementById('result') || document.createElement('div');
         resultElement.id = 'result';
         resultElement.textContent = message;
-        resultElement.style.cssText = `font-size: 18px; margin-top: 20px; color: ${isCorrect ? 'green' : 'red'};`;
+        resultElement.style.cssText = `font-size: 18px; margin-top: 20px; color: ${isCorrect ? 'green' : 'red'}; text-align: center;`;
         if (!document.getElementById('result')) {
             modalContent.appendChild(resultElement);
         }
@@ -265,7 +269,7 @@ async function displayQuiz1(quizContent) {
         });
     }
 
-    modalContent.innerHTML = '<div>All questions completed!</div>';
+    modalContent.innerHTML = `<div>Quiz Completed! </br> You made ${correctAnswers} correct answers</div>`;
     modalContent.appendChild(exitButton);
     modalContent.style.textAlign = 'center';
 }
