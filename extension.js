@@ -172,6 +172,21 @@ async function summarizeToASingleParagraph(selectedText) {
 
 async function AIQuiz(selectedText) {
     const systemContent = 'you are a trivia maker';
+    const jsonFormatForQuiz = {
+        questions: [
+            {
+                question: 'What is the capital of France?',
+                answers: ['Paris', 'London', 'Berlin', 'Madrid'],
+                correct_answer: 'Paris'
+            },
+            {
+                question: 'What is the capital of Germany?',
+                answers: ['Paris', 'London', 'Berlin', 'Madrid'],
+                correct_answer: 'Berlin'
+            }
+        ]
+    }
+    const stringifierJsonFormatForQuiz = JSON.stringify(jsonFormatForQuiz);
     const conversationItem = [
         {
             role: 'system',
@@ -179,11 +194,42 @@ async function AIQuiz(selectedText) {
         },
         {
             role: 'user',
-            content:`based on this text generate me 10 multiple choice questions with 4 possible answers where 1 answer is actually right(randomly placing the correct answer withing the 4 options) and mark it so we know which one it is - respond with the questions only: ${selectedText} , give me this is a json format.`
+            content:`based on this text generate me 10 multiple choice questions with 4 possible answers where 1 answer is actually right(randomly placing the correct answer withing the 4 options) and mark it so we know which one it is - respond with the questions only: ${selectedText}. You MUST give me this is this json format: ${stringifierJsonFormatForQuiz}.`
         }
     ]; // create a conversationItem (MUST BE IN THAT FORMAT)
     const response = await queryOpenAIWithLoading(conversationItem, 0.7);
-    await displayQuiz(response);
+    const responseJson = JSON.parse(response);
+    console.log('responseJson: ', responseJson);
+    await displayQuiz(responseJson);
+    await displayQuiz1(responseJson);
+}
+
+async function displayQuiz1(quizContent) {
+    async function displayQuestion(question, answers) {
+        let modalContent = document.getElementById('quizModal');
+        let questionElement = document.createElement('div');
+        questionElement.textContent = question.question;
+        console.log('questionElement: ', questionElement);
+        modalContent.appendChild(questionElement);
+        for (let i = 0; i < question.answers.length; i++) {
+            let answerElement = document.createElement(`answer${i}`);
+            console.log('question.answers[i]: ', question.answers[i]);
+            answerElement.textContent = question.answers[i];
+            modalContent.appendChild(answerElement);
+        }
+    }
+    async function checkIfCorrectAnswer() {
+        let modalContent = document.getElementById('quizModalContent');
+        let correctAnswerElement = document.createElement('div');
+        correctAnswerElement.textContent = 'Correct Answer!';
+        modalContent.appendChild(correctAnswerElement);
+    }
+    for (let i = 0; i < quizContent.questions.length; i++) {
+        console.log('displaying question: ', quizContent.questions[i], quizContent.questions[i].correct_answer);
+        await displayQuestion(quizContent.questions[i], quizContent.questions[i].correct_answer);
+        await checkIfCorrectAnswer();
+    }
+
 }
 
 async function displayLoading() {
@@ -321,9 +367,9 @@ async function displayQuiz(quizContent) {
             align-items: stretch;
         `;
         
-        let modalContent = document.createElement('div');
-        modalContent.id = 'quizModalContent';
-        modalContent.innerHTML = quizContent; // Assuming quizContent is HTML formatted
+        // let modalContent = document.createElement('div');
+        // modalContent.id = 'quizModalContent';
+        // modalContent.innerHTML = quizContent; // Assuming quizContent is HTML formatted
         
         let closeButton = document.createElement('button');
         closeButton.textContent = 'Close';
@@ -331,7 +377,7 @@ async function displayQuiz(quizContent) {
             modal.style.display = 'none';
         };
         
-        modal.appendChild(modalContent);
+        // modal.appendChild(modalContent);
         modal.appendChild(closeButton);
         
         document.body.appendChild(modal);
