@@ -113,7 +113,8 @@ async function improveSelectedText(selectedText) {
         }
     ]; // create a conversationItem (MUST BE IN THAT FORMAT)
     const response = await queryOpenAI(conversationItem, 0.2); // We must call the chatGPT query function with await since it is an async (it takes time for the response to come back) function.
-    await replaceText(selectedText, response);
+    // await replaceText(selectedText, response);
+    await replaceTextPOP(response);
 }
 // -------------------THIS THE END OF HOW TO IMPROVE SELECTED TEXT USING CHATGPT-------------------
 
@@ -130,7 +131,8 @@ async function improveSelectedTextCreative(selectedText) {
         }
     ];
     const response = await queryOpenAI(conversationItem, 1.2);
-    await replaceText(selectedText, response);
+    // await replaceText(selectedText, response);
+    await replaceTextPOP(response);
 }
 
 async function addCommentsToCode(selectedText) {
