@@ -207,6 +207,7 @@ async function AIQuiz(selectedText) {
 
 async function displayQuiz1(quizContent) {
     const modalContent = document.getElementById('quizModal');
+    modalContent.innerHTML = '';
     const exitButton = document.createElement('button');
     exitButton.textContent = 'Exit';
     exitButton.onclick = function() {
@@ -226,7 +227,6 @@ async function displayQuiz1(quizContent) {
     async function displayQuestion(question) {
         modalContent.innerHTML = '';
         modalContent.appendChild(exitButton)
-
         let questionElement = document.createElement('div');
         questionElement.textContent = question.question;
         questionElement.style.cssText = 'font-size: 20px; margin-bottom: 20px; padding: inherit;';
@@ -267,10 +267,11 @@ async function displayQuiz1(quizContent) {
             modalContent.appendChild(resultElement);
         }
     }
-    // modalContent.style.display = 'block !important';
+
     for (let i = 0; i < quizContent.questions.length; i++) {
         console.log('Displaying question:', quizContent.questions[i].question);
         await new Promise(resolve => setTimeout(resolve, 2000)); // 500 ms delay
+        modalContent.style.display = 'block';
         await displayQuestion(quizContent.questions[i]);
 
         await new Promise(resolve => {
@@ -414,14 +415,14 @@ async function displayQuiz() {
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             overflow-y: auto;
             box-sizing: border-box;
-            display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: stretch;
         `;
+        modal.style.display = 'none';
         document.body.appendChild(modal);
     } else {
-        modal.style.display = 'block';
+        // modal.style.display = 'block';
     }
 }
 
