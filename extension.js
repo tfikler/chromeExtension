@@ -131,7 +131,6 @@ async function improveSelectedTextCreative(selectedText) {
         }
     ];
     const response = await queryOpenAI(conversationItem, 1.2);
-    // await replaceText(selectedText, response);
     await replaceTextPOP(response);
 }
 
@@ -236,18 +235,27 @@ async function displayQuiz1(quizContent) {
         question.answers.forEach((answer) => {
             let answerElement = document.createElement('button');
             answerElement.textContent = answer;
+            if (answer === question.correct_answer) {
+                answerElement.id = 'correctAnswer'
+            }
             answerElement.style.cssText = 'display: block; width: 100%; padding: 10px; margin-top: 10px; font-size: 16px; border: 1px solid #ccc; background-color: #f4f4f4; cursor: pointer; transition: background-color 0.3s;';
             answerElement.onclick = async () => {
                 const isCorrect = answer === question.correct_answer;
                 if (isCorrect) {
                     correctAnswers++;
                 }
+                paintTheTrueAnswer();
                 answerElement.style.backgroundColor = isCorrect ? 'lightgreen' : 'salmon';
                 displayResult(isCorrect ? 'Correct Answer!' : 'Wrong Answer!', isCorrect);
                 answerElement.removeEventListener('click', this);
             };
             modalContent.appendChild(answerElement);
         });
+    }
+
+    function paintTheTrueAnswer() {
+        const correctAnswerElement = document.getElementById('correctAnswer');
+        correctAnswerElement.style.backgroundColor = 'lightgreen';
     }
 
     function displayResult(message, isCorrect) {
@@ -259,7 +267,7 @@ async function displayQuiz1(quizContent) {
             modalContent.appendChild(resultElement);
         }
     }
-    modalContent.style.display = 'block !important';
+    // modalContent.style.display = 'block !important';
     for (let i = 0; i < quizContent.questions.length; i++) {
         console.log('Displaying question:', quizContent.questions[i].question);
         await new Promise(resolve => setTimeout(resolve, 2000)); // 500 ms delay
@@ -385,7 +393,7 @@ async function replaceTextPOP(improvedText) {
         modal.style.display = 'block';
     }
 }
-async function displayQuiz(quizContent) {
+async function displayQuiz() {
     let modal = document.getElementById('quizModal');
     if (!modal) {
         modal = document.createElement('div');
@@ -411,20 +419,6 @@ async function displayQuiz(quizContent) {
             justify-content: center;
             align-items: stretch;
         `;
-        
-        // let modalContent = document.createElement('div');
-        // modalContent.id = 'quizModalContent';
-        // modalContent.innerHTML = quizContent; // Assuming quizContent is HTML formatted
-        
-        // let closeButton = document.createElement('button');
-        // closeButton.textContent = 'Close';
-        // closeButton.onclick = function() {
-        //     modal.style.display = 'none';
-        // };
-        
-        // modal.appendChild(modalContent);
-        // modal.appendChild(closeButton);
-        
         document.body.appendChild(modal);
     } else {
         modal.style.display = 'block';
