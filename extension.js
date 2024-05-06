@@ -16,6 +16,24 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     }
 });
 
+chrome.runtime.onInstalled.addListener(() => {
+    chrome.contextMenus.create({
+        id: "Generate Image",
+        title: "Generate Image",
+        contexts: ["selection"]
+    });
+});
+
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+    if (info.menuItemId === "Generate Image") {
+        chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            function: generateImage,
+            args: [info.selectionText]
+        });
+    }
+});
+
 // -------------------THIS IS HOW TO BUILD NEW ITEM IN CONTEXT MENU-------------------
 // its ok if we have the yellow underline in the code below, it is just a warning.
 chrome.runtime.onInstalled.addListener(() => {
@@ -133,6 +151,86 @@ async function improveSelectedTextCreative(selectedText) {
     const response = await queryOpenAI(conversationItem, 1.2);
     await replaceTextPOP(response);
 }
+async function queryOpenAiForImageAndLoading(selectedText) {
+    await displayLoading();
+    const apiKey = 'sk-proj-LyFh8uJ9L105OpQqAgPPT3BlbkFJABdGfuYHtbMSCOezr0vd';
+    const res = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+            model: 'dall-e-3',
+            prompt: `A drawing of a ${selectedText}`,
+            n: 1,
+            size: '1024x1024'
+        })
+    })
+    const jsonAnswer = await res.json();
+    console.log('response from openai: ', jsonAnswer);
+    const imgURL = jsonAnswer.data[0].url;
+    await hideLoading();
+    return imgURL;
+}
+
+async function generateImage(selectedText) {
+    const imgURL = await queryOpenAiForImageAndLoading(selectedText)
+    await displayImg(imgURL);
+}
+
+async function displayImg(imgURL) {
+    let modal = document.getElementById('ImgModel');
+    if (!modal) {
+        // Create modal container
+        modal = document.createElement('div');
+        modal.id = 'ImgModel';
+        modal.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40%;
+            max-width: 600px;
+            height: auto;
+            max-height: 80%;
+            z-index: 10000;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: stretch;
+        `;
+        // Create modal content container
+        let modalContent = document.createElement('img');
+        modalContent.id = 'imgToDisplay';
+        modalContent.src = imgURL;
+        modalContent.style.cssText = 'width: 100%; height: 100%;';
+
+        // Create close button for modal
+        let closeButton = document.createElement('button');
+        closeButton.textContent = 'Close';
+        closeButton.onclick = function() {
+            modal.style.display = 'none';
+        };
+
+        modal.appendChild(modalContent);
+        modal.appendChild(closeButton);
+
+        document.body.appendChild(modal);
+    } else {
+        // If modal already exists, just update the content and make sure it's visible
+        let modalContent = document.getElementById('imgToDisplay');
+        modalContent.src = imgURL;
+        modal.style.display = 'block';
+    }
+}
+
 
 async function addCommentsToCode(selectedText) {
     const systemContent = 'You should provide a comment to add to the selected code. - response only with the comment';
