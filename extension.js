@@ -34,8 +34,13 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     }
 });
 
-// -------------------THIS IS HOW TO BUILD NEW ITEM IN CONTEXT MENU-------------------
-// its ok if we have the yellow underline in the code below, it is just a warning.
+
+// TODO:
+//  1. Check what is wrong with addListener
+//  2. Make sure each function is called with replaceTextPOP
+//  3. More debug to make sure everything is working
+//  4. Remove the empty div before showing the image
+//  5. Improve the image feature
 chrome.runtime.onInstalled.addListener(() => {
     chrome.contextMenus.create({
         id: "improveEnglishCreative",
@@ -130,8 +135,7 @@ async function improveSelectedText(selectedText) {
             content: selectedText
         }
     ]; // create a conversationItem (MUST BE IN THAT FORMAT)
-    const response = await queryOpenAI(conversationItem, 0.2); // We must call the chatGPT query function with await since it is an async (it takes time for the response to come back) function.
-    // await replaceText(selectedText, response);
+    const response = await queryOpenAIWithLoading(conversationItem, 0.2); // We must call the chatGPT query function with await since it is an async (it takes time for the response to come back) function.
     await replaceTextPOP(response);
 }
 // -------------------THIS THE END OF HOW TO IMPROVE SELECTED TEXT USING CHATGPT-------------------
@@ -148,7 +152,7 @@ async function improveSelectedTextCreative(selectedText) {
             content: selectedText
         }
     ];
-    const response = await queryOpenAI(conversationItem, 1.2);
+    const response = await queryOpenAIWithLoading(conversationItem, 1.2);
     await replaceTextPOP(response);
 }
 async function queryOpenAiForImageAndLoading(selectedText) {
@@ -220,9 +224,13 @@ async function displayImg(imgURL) {
         };
 
         modal.appendChild(modalContent);
-        modal.appendChild(closeButton);
+        setTimeout(() => {
+            modal.appendChild(closeButton);
+        }, 1500);
 
-        document.body.appendChild(modal);
+        setTimeout(() => {
+            document.body.appendChild(modal);
+        }, 1500);
     } else {
         // If modal already exists, just update the content and make sure it's visible
         let modalContent = document.getElementById('imgToDisplay');
@@ -244,13 +252,13 @@ async function addCommentsToCode(selectedText) {
             content: selectedText
         }
     ];
-    const response = await queryOpenAI(conversationItem, 0.2);
-    const commentToAdd = response;
+    const commentToAdd = await queryOpenAIWithLoading(conversationItem, 0.2);
     //comment in the specified format
     const comment = `\n// comments: '${commentToAdd}'`;
     // Append the comment to the selected text
     const newText = `${selectedText}${comment}`;
-    await replaceText(selectedText, newText);
+    // await replaceText(selectedText, newText);
+    await replaceTextPOP(newText);
 }
 
 async function summarizeToASingleParagraph(selectedText) {
