@@ -205,7 +205,6 @@ async function displayImg(imgURL) {
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             overflow-y: auto;
             box-sizing: border-box;
-            display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: stretch;
@@ -228,9 +227,7 @@ async function displayImg(imgURL) {
             modal.appendChild(closeButton);
         }, 1500);
 
-        setTimeout(() => {
-            document.body.appendChild(modal);
-        }, 1500);
+        document.body.appendChild(modal);
     } else {
         // If modal already exists, just update the content and make sure it's visible
         let modalContent = document.getElementById('imgToDisplay');
