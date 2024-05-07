@@ -16,8 +16,31 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     }
 });
 
-// -------------------THIS IS HOW TO BUILD NEW ITEM IN CONTEXT MENU-------------------
-// its ok if we have the yellow underline in the code below, it is just a warning.
+chrome.runtime.onInstalled.addListener(() => {
+    chrome.contextMenus.create({
+        id: "Generate Image",
+        title: "Generate Image",
+        contexts: ["selection"]
+    });
+});
+
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+    if (info.menuItemId === "Generate Image") {
+        chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            function: generateImage,
+            args: [info.selectionText]
+        });
+    }
+});
+
+
+// TODO:
+//  1. Check what is wrong with addListener
+//  2. Make sure each function is called with replaceTextPOP
+//  3. More debug to make sure everything is working
+//  4. Remove the empty div before showing the image
+//  5. Improve the image feature
 chrome.runtime.onInstalled.addListener(() => {
     chrome.contextMenus.create({
         id: "improveEnglishCreative",
@@ -112,8 +135,8 @@ async function improveSelectedText(selectedText) {
             content: selectedText
         }
     ]; // create a conversationItem (MUST BE IN THAT FORMAT)
-    const response = await queryOpenAI(conversationItem, 0.2); // We must call the chatGPT query function with await since it is an async (it takes time for the response to come back) function.
-    await replaceText(selectedText, response);
+    const response = await queryOpenAIWithLoading(conversationItem, 0.2); // We must call the chatGPT query function with await since it is an async (it takes time for the response to come back) function.
+    await replaceTextPOP(response);
 }
 // -------------------THIS THE END OF HOW TO IMPROVE SELECTED TEXT USING CHATGPT-------------------
 
@@ -129,9 +152,90 @@ async function improveSelectedTextCreative(selectedText) {
             content: selectedText
         }
     ];
-    const response = await queryOpenAI(conversationItem, 1.2);
-    await replaceText(selectedText, response);
+    const response = await queryOpenAIWithLoading(conversationItem, 1.2);
+    await replaceTextPOP(response);
 }
+async function queryOpenAiForImageAndLoading(selectedText) {
+    await displayLoading();
+    const apiKey = 'sk-proj-LyFh8uJ9L105OpQqAgPPT3BlbkFJABdGfuYHtbMSCOezr0vd';
+    const res = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+            model: 'dall-e-3',
+            prompt: `A drawing of a ${selectedText}`,
+            n: 1,
+            size: '1024x1024'
+        })
+    })
+    const jsonAnswer = await res.json();
+    console.log('response from openai: ', jsonAnswer);
+    const imgURL = jsonAnswer.data[0].url;
+    await hideLoading();
+    return imgURL;
+}
+
+async function generateImage(selectedText) {
+    const imgURL = await queryOpenAiForImageAndLoading(selectedText)
+    await displayImg(imgURL);
+}
+
+async function displayImg(imgURL) {
+    let modal = document.getElementById('ImgModel');
+    if (!modal) {
+        // Create modal container
+        modal = document.createElement('div');
+        modal.id = 'ImgModel';
+        modal.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40%;
+            max-width: 600px;
+            height: auto;
+            max-height: 80%;
+            z-index: 10000;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+            box-sizing: border-box;
+            flex-direction: column;
+            justify-content: center;
+            align-items: stretch;
+        `;
+        // Create modal content container
+        let modalContent = document.createElement('img');
+        modalContent.id = 'imgToDisplay';
+        modalContent.src = imgURL;
+        modalContent.style.cssText = 'width: 100%; height: 100%;';
+
+        // Create close button for modal
+        let closeButton = document.createElement('button');
+        closeButton.textContent = 'Close';
+        closeButton.onclick = function() {
+            modal.style.display = 'none';
+        };
+
+        modal.appendChild(modalContent);
+        setTimeout(() => {
+            modal.appendChild(closeButton);
+        }, 1500);
+
+        document.body.appendChild(modal);
+    } else {
+        // If modal already exists, just update the content and make sure it's visible
+        let modalContent = document.getElementById('imgToDisplay');
+        modalContent.src = imgURL;
+        modal.style.display = 'block';
+    }
+}
+
 
 async function addCommentsToCode(selectedText) {
     const systemContent = 'You should provide a comment to add to the selected code. - response only with the comment';
@@ -145,13 +249,13 @@ async function addCommentsToCode(selectedText) {
             content: selectedText
         }
     ];
-    const response = await queryOpenAI(conversationItem, 0.2);
-    const commentToAdd = response;
+    const commentToAdd = await queryOpenAIWithLoading(conversationItem, 0.2);
     //comment in the specified format
     const comment = `\n// comments: '${commentToAdd}'`;
     // Append the comment to the selected text
     const newText = `${selectedText}${comment}`;
-    await replaceText(selectedText, newText);
+    // await replaceText(selectedText, newText);
+    await replaceTextPOP(newText);
 }
 
 async function summarizeToASingleParagraph(selectedText) {
@@ -206,6 +310,7 @@ async function AIQuiz(selectedText) {
 
 async function displayQuiz1(quizContent) {
     const modalContent = document.getElementById('quizModal');
+    modalContent.innerHTML = '';
     const exitButton = document.createElement('button');
     exitButton.textContent = 'Exit';
     exitButton.onclick = function() {
@@ -225,7 +330,6 @@ async function displayQuiz1(quizContent) {
     async function displayQuestion(question) {
         modalContent.innerHTML = '';
         modalContent.appendChild(exitButton)
-
         let questionElement = document.createElement('div');
         questionElement.textContent = question.question;
         questionElement.style.cssText = 'font-size: 20px; margin-bottom: 20px; padding: inherit;';
@@ -234,18 +338,27 @@ async function displayQuiz1(quizContent) {
         question.answers.forEach((answer) => {
             let answerElement = document.createElement('button');
             answerElement.textContent = answer;
+            if (answer === question.correct_answer) {
+                answerElement.id = 'correctAnswer'
+            }
             answerElement.style.cssText = 'display: block; width: 100%; padding: 10px; margin-top: 10px; font-size: 16px; border: 1px solid #ccc; background-color: #f4f4f4; cursor: pointer; transition: background-color 0.3s;';
             answerElement.onclick = async () => {
                 const isCorrect = answer === question.correct_answer;
                 if (isCorrect) {
                     correctAnswers++;
                 }
+                paintTheTrueAnswer();
                 answerElement.style.backgroundColor = isCorrect ? 'lightgreen' : 'salmon';
                 displayResult(isCorrect ? 'Correct Answer!' : 'Wrong Answer!', isCorrect);
                 answerElement.removeEventListener('click', this);
             };
             modalContent.appendChild(answerElement);
         });
+    }
+
+    function paintTheTrueAnswer() {
+        const correctAnswerElement = document.getElementById('correctAnswer');
+        correctAnswerElement.style.backgroundColor = 'lightgreen';
     }
 
     function displayResult(message, isCorrect) {
@@ -257,10 +370,11 @@ async function displayQuiz1(quizContent) {
             modalContent.appendChild(resultElement);
         }
     }
-    modalContent.style.display = 'block !important';
+
     for (let i = 0; i < quizContent.questions.length; i++) {
         console.log('Displaying question:', quizContent.questions[i].question);
         await new Promise(resolve => setTimeout(resolve, 2000)); // 500 ms delay
+        modalContent.style.display = 'block';
         await displayQuestion(quizContent.questions[i]);
 
         await new Promise(resolve => {
@@ -383,7 +497,7 @@ async function replaceTextPOP(improvedText) {
         modal.style.display = 'block';
     }
 }
-async function displayQuiz(quizContent) {
+async function displayQuiz() {
     let modal = document.getElementById('quizModal');
     if (!modal) {
         modal = document.createElement('div');
@@ -404,28 +518,14 @@ async function displayQuiz(quizContent) {
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             overflow-y: auto;
             box-sizing: border-box;
-            display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: stretch;
         `;
-        
-        // let modalContent = document.createElement('div');
-        // modalContent.id = 'quizModalContent';
-        // modalContent.innerHTML = quizContent; // Assuming quizContent is HTML formatted
-        
-        // let closeButton = document.createElement('button');
-        // closeButton.textContent = 'Close';
-        // closeButton.onclick = function() {
-        //     modal.style.display = 'none';
-        // };
-        
-        // modal.appendChild(modalContent);
-        // modal.appendChild(closeButton);
-        
+        modal.style.display = 'none';
         document.body.appendChild(modal);
     } else {
-        modal.style.display = 'block';
+        // modal.style.display = 'block';
     }
 }
 
