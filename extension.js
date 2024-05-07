@@ -196,7 +196,7 @@ async function AIQuiz(selectedText) {
             role: 'user',
             content:`based on this text generate me 10 multiple choice questions with 4 possible answers where 1 answer is actually right(randomly placing the correct answer withing the 4 options) and mark it so we know which one it is - respond with the questions only: ${selectedText}. You MUST give me this is this json format: ${stringifierJsonFormatForQuiz}.`
         }
-    ]; // create a conversationItem (MUST BE IN THAT FORMAT)
+    ]; // create a conversationItem (MUST BE IN THAT FORMAT) not relavnt
     const response = await queryOpenAIWithLoading(conversationItem, 0.7);
     const responseJson = JSON.parse(response);
     console.log('responseJson: ', responseJson);
